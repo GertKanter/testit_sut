@@ -12,8 +12,10 @@ This package adds the necessary services that needs to be executed in the SUT (S
 Clone the repository to your workspace (e.g., `~/catkin_ws`).
 
 ```
-cd ~/catkin_ws
+cd ~/catkin_ws/src
 git clone https://github.com/GertKanter/testit_sut
+cd ..
+catkin_make
 ```
 ## Add to stack launch
 
