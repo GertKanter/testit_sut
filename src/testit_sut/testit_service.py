@@ -66,7 +66,10 @@ class TestItSut:
         pids = psutil.pids()
         for pid in pids:
             p = psutil.Process(pid)
-            rospy.loginfo("pid " + str(p.pid) + "  cmd " + str(p.cmdline()) + "  cwd " + str(p.cwd()))
+            try:
+                rospy.loginfo("pid " + str(p.pid) + "  cmd " + str(p.cmdline()) + "  cwd " + str(p.cwd()))
+            except:
+                pass
         return True
 
 if __name__ == "__main__":
