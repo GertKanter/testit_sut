@@ -38,11 +38,12 @@ import rospy
 import std_srvs.srv
 import re
 import os
+import psutil
 
 class TestItSut:
     def __init__(self):
-        mode = rospy.get_param("~mode", "service")
-        if mode == "service":
+        self.mode = rospy.get_param("~mode", "service")
+        if self.mode == "service":
             # Service mode
             rospy.loginfo("TestIt SUT in SERVICE mode")
             self.flush_service = rospy.Service("/testit/flush_coverage", std_srvs.srv.Trigger, self.handle_flush)
@@ -51,7 +52,7 @@ class TestItSut:
             #TODO add support for topic trigger, needed for multi-computer node configuration
             rospy.loginfo("TestIt SUT in TOPIC mode")
             pass
-        node_workspace = rospy.get_param("~node_workspace", "catkin_ws")
+        self.node_workspace = rospy.get_param("~node_workspace", "catkin_ws")
         
 
     def handle_flush(self, req):
@@ -62,6 +63,8 @@ class TestItSut:
 
     def flush(self):
         rospy.loginfo("Flushing...")
+        pids = psutil.pids()
+        rospy.loginfo("pids = " + str(pids))
         return True
 
 if __name__ == "__main__":
