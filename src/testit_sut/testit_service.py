@@ -64,7 +64,9 @@ class TestItSut:
     def flush(self):
         rospy.loginfo("Flushing...")
         pids = psutil.pids()
-        rospy.loginfo("pids = " + str(pids))
+        for pid in pids:
+            p = psutil.Process(pid)
+            rospy.loginfo("pid " + str(p.pid) + "  cmd " + str(p.cmdline()) + "  cwd " + str(p.cwd()))
         return True
 
 if __name__ == "__main__":
