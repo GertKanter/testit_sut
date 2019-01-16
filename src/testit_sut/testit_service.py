@@ -63,7 +63,8 @@ class TestItSut:
         else:
             return self._node_workspace
 
-    @node_workspace.setter(self, value):
+    @node_workspace.setter
+    def node_workspace(self, value):
         if value is not None and type(value) == str:
             self._node_workspace = value
         else:
