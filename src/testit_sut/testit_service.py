@@ -90,7 +90,8 @@ class TestItSut:
                             # Don't send SIGUSR1 to self
                             rospy.loginfo("Sending SIGUSR1 to " + p.pid)
                             os.kill(p.pid, signal.SIGUSR1)
-                except:
+                except psutil.AccessDenied:
+                    # Some processes might be inaccessible
                     pass
             return True
 
