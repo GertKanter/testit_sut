@@ -39,6 +39,7 @@ import std_srvs.srv
 import re
 import os
 import psutil
+import signal
 
 class TestItSut:
     def __init__(self):
@@ -52,8 +53,21 @@ class TestItSut:
             #TODO add support for topic trigger, needed for multi-computer node configuration
             rospy.loginfo("TestIt SUT in TOPIC mode")
             pass
-        self.node_workspace = rospy.get_param("~node_workspace", "catkin_ws")
+        self._node_workspace = rospy.get_param("~node_workspace", None)
         
+    @property
+    def node_workspace(self):
+        if self._node_workspace is None:
+            rospy.logwarn("Catkin workspace for tested packages is not defined (node_workspace)")
+            return None
+        else:
+            return self._node_workspace
+
+    @node_workspace.setter(self, value):
+        if value is not None and type(value) == str:
+            self._node_workspace = value
+        else:
+            raise ValueError("node_workspace value must be string!")
 
     def handle_flush(self, req):
         rospy.logdebug("Coverage results requested")
@@ -63,14 +77,22 @@ class TestItSut:
 
     def flush(self):
         rospy.loginfo("Flushing...")
-        pids = psutil.pids()
-        for pid in pids:
-            p = psutil.Process(pid)
-            try:
-                rospy.loginfo("pid " + str(p.pid) + "  cmd " + str(p.cmdline()) + "  cwd " + str(p.cwd()))
-            except:
-                pass
-        return True
+        if self.node_workspace is not None:
+            pattern = re.compile("^" + self.node_workspace)
+            pids = psutil.pids()
+            for pid in pids:
+                p = psutil.Process(pid)
+                try:
+                    cmdline = p.cmdline()
+                    rospy.loginfo("pid " + str(p.pid) + "  cmd " + str(cmdline) + "  cwd " + str(p.cwd()))
+                    if pattern.match(cmdline[0]) or (cmdline[0] == "python" and pattern.match(cmdline[1])):
+                        if cmdline[1].find("testit_sut") == -1:
+                            # Don't send SIGUSR1 to self
+                            rospy.loginfo("Sending SIGUSR1 to " + p.pid)
+                            os.kill(p.pid, signal.SIGUSR1)
+                except:
+                    pass
+            return True
 
 if __name__ == "__main__":
     rospy.init_node('testit_sut', anonymous=True)
