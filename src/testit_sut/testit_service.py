@@ -89,7 +89,7 @@ class TestItSut:
                     if pattern.match(cmdline[0]) or (cmdline[0] == "python" and pattern.match(cmdline[1])):
                         if cmdline[1].find("testit_sut") == -1:
                             # Don't send SIGUSR1 to self
-                            rospy.loginfo("Sending SIGUSR1 to " + p.pid)
+                            rospy.loginfo("Sending SIGUSR1 to " + str(p.pid))
                             os.kill(p.pid, signal.SIGUSR1)
                 except psutil.AccessDenied:
                     # Some processes might be inaccessible
