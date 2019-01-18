@@ -16,5 +16,7 @@
   <author email="gert.kanter@taltech.ee">Gert Kanter</author>
 
   <buildtool_depend>catkin</buildtool_depend>
+  <build_depend>testit_msgs</build_depend>
   <run_depend>rospy</run_depend>
+  <run_depend>testit_msgs</run_depend>
 </package>

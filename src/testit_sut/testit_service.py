@@ -35,11 +35,12 @@
 # Author: Gert Kanter
 
 import rospy
-import std_srvs.srv
 import re
 import os
 import psutil
 import signal
+import testit_msgs.srv
+import testit_msgs.msg
 
 class TestItSut:
     def __init__(self):
@@ -47,7 +48,7 @@ class TestItSut:
         if self.mode == "service":
             # Service mode
             rospy.loginfo("TestIt SUT in SERVICE mode")
-            self.flush_service = rospy.Service("/testit/flush_coverage", std_srvs.srv.Trigger, self.handle_flush)
+            self.flush_service = rospy.Service("/testit/flush_coverage", testit_msgs.srv.Coverage, self.handle_flush)
         else:
             # Topic mode
             #TODO add support for topic trigger, needed for multi-computer node configuration
@@ -72,29 +73,40 @@ class TestItSut:
 
     def handle_flush(self, req):
         rospy.logdebug("Coverage results requested")
-        message = "coverage message"
+        result = True
+        file_coverages = []
+        coverage = testit_msgs.msg.Coverage()
+        coverage.name = "filename"
+        coverage.lines = [2, 3, 5]
+        file_coverages.append(coverage)
         success = self.flush()
-        return std_srvs.srv.TriggerResponse(success, message)
+
+        return testit_msgs.srv.CoverageResponse(result, file_coverages)
 
     def flush(self):
         rospy.loginfo("Flushing...")
         if self.node_workspace is not None:
+            # Remove *.gcda and .coverage files
+
+            # Send SIGUSR1 to packages under test
             pattern = re.compile("^" + self.node_workspace)
             pids = psutil.pids()
             for pid in pids:
                 p = psutil.Process(pid)
                 try:
                     cmdline = p.cmdline()
-                    rospy.loginfo("pid " + str(p.pid) + "  cmd " + str(cmdline) + "  cwd " + str(p.cwd()))
+                    rospy.logdebug("pid " + str(p.pid) + "  cmd " + str(cmdline) + "  cwd " + str(p.cwd()))
                     if pattern.match(cmdline[0]) or (cmdline[0] == "python" and pattern.match(cmdline[1])):
                         if cmdline[1].find("testit_sut") == -1:
                             # Don't send SIGUSR1 to self
-                            rospy.loginfo("Sending SIGUSR1 to " + str(p.pid))
+                            rospy.logdebug("Sending SIGUSR1 to " + str(p.pid))
                             os.kill(p.pid, signal.SIGUSR1)
                 except psutil.AccessDenied:
                     # Some processes might be inaccessible
                     pass
+            # Process all *.gcda and .coverage files
             return True
+        return False
 
 if __name__ == "__main__":
     rospy.init_node('testit_sut', anonymous=True)

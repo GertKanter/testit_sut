@@ -3,6 +3,7 @@ project(testit_sut)
 
 find_package(catkin REQUIRED COMPONENTS
   rospy
+  testit_msgs
 )
 
 catkin_python_setup()
