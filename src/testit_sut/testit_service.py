@@ -76,7 +76,7 @@ class TestItSut:
         result = True
         file_coverages = []
         coverage = testit_msgs.msg.FileCoverage()
-        coverage.name = "filename"
+        coverage.filename = "filename"
         coverage.lines = [2, 3, 5]
         file_coverages.append(coverage)
         success = self.flush()
