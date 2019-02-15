@@ -96,7 +96,7 @@ class TestItSut:
                 try:
                     cmdline = p.cmdline()
                     rospy.logdebug("pid " + str(p.pid) + "  cmd " + str(cmdline) + "  cwd " + str(p.cwd()))
-                    if pattern.match(cmdline[0]) or ((cmdline[0] == "python" or cmdline[0] == "/usr/bin/python") and pattern.match(cmdline[1])):
+                    if pattern.match(cmdline[0]) or ((cmdline[0] == "python" or cmdline[0] == "/usr/bin/python") and (pattern.match(cmdline[1]) or pattern.match(cmdline[3]))):
                         if cmdline[1].find("testit_sut") == -1:
                             # Don't send SIGUSR1 to self
                             rospy.logdebug("Sending SIGUSR1 to " + str(p.pid))
