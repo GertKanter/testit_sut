@@ -54,14 +54,14 @@ class TestItSut:
             #TODO add support for topic trigger, needed for multi-computer node configuration
             rospy.loginfo("TestIt SUT in TOPIC mode")
             pass
-        self._node_workspace = rospy.get_param("~node_workspace", None)
-        self._coverage_directories = rospy.get_param("~coverage_directories", None)
+        self.node_workspace = rospy.get_param("~node_workspace", "")
+        self.coverage_directories = rospy.get_param("~coverage_directories", "")
         
     @property
     def node_workspace(self):
-        if self._node_workspace is None:
+        if self._node_workspace is None or len(self._node_workspace) == 0:
             rospy.logwarn("Catkin workspace for tested packages is not defined (parameter 'node_workspace', this should be a string e.g., '/catkin_ws')")
-            return None
+            return ""
         else:
             return self._node_workspace
 
@@ -74,9 +74,9 @@ class TestItSut:
 
     @property
     def coverage_directories(self):
-        if self._coverage_directories is None:
+        if self._coverage_directories is None or len(self._coverage_directories) == 0:
             rospy.logwarn("Coverage recording log file directories are not defined (parameter 'coverage_directories', this should be a semicolon-separated string e.g., '/catkin_ws/build;/root/.ros')")
-            return None
+            return []
         else:
             return self._coverage_directories
 
