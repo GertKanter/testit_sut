@@ -42,7 +42,7 @@ import signal
 import testit_msgs.srv
 import testit_msgs.msg
 
-class TestItSut:
+class TestItSut(object):
     def __init__(self):
         self.mode = rospy.get_param("~mode", "service")
         if self.mode == "service":
@@ -53,7 +53,6 @@ class TestItSut:
             # Topic mode
             #TODO add support for topic trigger, needed for multi-computer node configuration
             rospy.loginfo("TestIt SUT in TOPIC mode")
-            pass
         self.node_workspace = rospy.get_param("~node_workspace", "")
         self.coverage_directories = rospy.get_param("~coverage_directories", "")
         
