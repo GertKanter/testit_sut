@@ -55,11 +55,12 @@ class TestItSut:
             rospy.loginfo("TestIt SUT in TOPIC mode")
             pass
         self._node_workspace = rospy.get_param("~node_workspace", None)
+        self._coverage_directories = rospy.get_param("~coverage_directories", None)
         
     @property
     def node_workspace(self):
         if self._node_workspace is None:
-            rospy.logwarn("Catkin workspace for tested packages is not defined (node_workspace)")
+            rospy.logwarn("Catkin workspace for tested packages is not defined (parameter 'node_workspace', this should be a string e.g., '/catkin_ws')")
             return None
         else:
             return self._node_workspace
@@ -70,6 +71,21 @@ class TestItSut:
             self._node_workspace = value
         else:
             raise ValueError("node_workspace value must be string!")
+
+    @property
+    def coverage_directories(self):
+        if self._coverage_directories is None:
+            rospy.logwarn("Coverage recording log file directories are not defined (parameter 'coverage_directories', this should be a semicolon-separated string e.g., '/catkin_ws/build;/root/.ros')")
+            return None
+        else:
+            return self._coverage_directories
+
+    @coverage_directories.setter
+    def coverage_directories(self, value):
+        if value is not None and type(value) == str:
+            self._coverage_directories = value.split(";")
+        else:
+            raise ValueError("coverage_directories value must be string!")
 
     def handle_flush(self, req):
         rospy.logdebug("Coverage results requested")
@@ -105,6 +121,8 @@ class TestItSut:
                     # Some processes might be inaccessible
                     pass
             # Process all *.gcda and .coverage files
+            for directory in self.coverage_directories:
+                rospy.loginfo("Looking into " + directory)
             return True
         return False
 
