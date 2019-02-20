@@ -90,16 +90,26 @@ class TestItSut(object):
         rospy.logdebug("Coverage results requested")
         result = True
         file_coverages = []
-        coverage = testit_msgs.msg.FileCoverage()
-        coverage.filename = "filename"
-        coverage.lines = [2, 3, 5]
-        file_coverages.append(coverage)
         success = self.flush()
+	if self.coverage is not None:
+            for file_coverage in self.coverage.keys():
+                coverage = testit_msgs.msg.FileCoverage()
+                coverage.filename = file_coverage
+                coverage.lines = self.coverage[file_coverage]
+                file_coverages.append(coverage)
 
         return testit_msgs.srv.CoverageResponse(result, file_coverages)
 
     def process_coverage(self, filename):
         rospy.loginfo("process_coverage(" + str(filename) + ")")
+        header = "!coverage.py: This is a private format, don't read it directly!"
+        data = []
+        with open(filename) as f:
+            data = f.readlines()
+        for i, line in enumerate(data):
+            data[i] = line.replace(header, '')
+        lines = eval(data[0])
+        return lines['lines']
 
     def flush(self):
         rospy.loginfo("Flushing...")
@@ -123,12 +133,13 @@ class TestItSut(object):
                     # Some processes might be inaccessible
                     pass
             # Process all *.gcda and .coverage files
+            self.coverage = None
             for coverage_directory in self.coverage_directories:
                 rospy.loginfo("Looking into " + coverage_directory)
                 for directory, dirnames, filenames in os.walk(coverage_directory):
                     for filename in filenames:
                         if filename == ".coverage":
-                            self.process_coverage(str(directory) + "/" +  filename)
+                            self.coverage = self.process_coverage(str(directory) + "/" +  filename)
             return True
         return False
 
