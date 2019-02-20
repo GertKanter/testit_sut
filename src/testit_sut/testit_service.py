@@ -98,6 +98,9 @@ class TestItSut(object):
 
         return testit_msgs.srv.CoverageResponse(result, file_coverages)
 
+    def process_coverage(self, filename):
+        rospy.loginfo("process_coverage(" + str(filename) + ")")
+
     def flush(self):
         rospy.loginfo("Flushing...")
         if self.node_workspace is not None:
@@ -120,8 +123,12 @@ class TestItSut(object):
                     # Some processes might be inaccessible
                     pass
             # Process all *.gcda and .coverage files
-            for directory in self.coverage_directories:
-                rospy.loginfo("Looking into " + directory)
+            for coverage_directory in self.coverage_directories:
+                rospy.loginfo("Looking into " + coverage_directory)
+                for directory, dirnames, filenames in os.walk(coverage_directory):
+                    for filename in filenames:
+                        if filename == ".coverage":
+                            self.process_coverage(str(directory) + "/" +  filename)
             return True
         return False
 
