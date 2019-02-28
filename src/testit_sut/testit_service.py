@@ -106,7 +106,7 @@ class TestItSut(object):
         data = []
         with open(filename) as f:
             data = f.readlines()
-	    data.replace(header, '')
+	    data[0].replace(header, '')
             lines = eval(data[0])
             return lines['lines']
         return {}
