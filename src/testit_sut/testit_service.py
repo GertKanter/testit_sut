@@ -106,10 +106,10 @@ class TestItSut(object):
         data = []
         with open(filename) as f:
             data = f.readlines()
-        for i, line in enumerate(data):
-            data[i] = line.replace(header, '')
-        lines = eval(data[0])
-        return lines['lines']
+	    data.replace(header, '')
+            lines = eval(data[0])
+            return lines['lines']
+        return {}
 
     def flush(self):
         rospy.loginfo("Flushing...")
@@ -133,13 +133,13 @@ class TestItSut(object):
                     # Some processes might be inaccessible
                     pass
             # Process all *.gcda and .coverage files
-            self.coverage = None
+            self.coverage = {}
             for coverage_directory in self.coverage_directories:
                 rospy.loginfo("Looking into " + coverage_directory)
                 for directory, dirnames, filenames in os.walk(coverage_directory):
                     for filename in filenames:
                         if filename == ".coverage":
-                            self.coverage = self.process_coverage(str(directory) + "/" +  filename)
+                            self.coverage.update(self.process_coverage(str(directory) + "/" +  filename))
             return True
         return False
 
