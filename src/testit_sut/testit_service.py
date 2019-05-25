@@ -111,7 +111,8 @@ class TestItSut(object):
                     replaced = data[0].replace(header, '')
                     lines = eval(replaced)
                     return lines['lines']
-        except:
+        except Exception as e:
+            rospy.logerr(e)
             rospy.sleep(0.05)
             continue
         return {}
