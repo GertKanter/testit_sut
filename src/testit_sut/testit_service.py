@@ -114,7 +114,6 @@ class TestItSut(object):
         except Exception as e:
             rospy.logerr(e)
             rospy.sleep(0.05)
-            continue
         return {}
 
     def flush(self):
