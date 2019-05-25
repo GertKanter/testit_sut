@@ -125,12 +125,12 @@ class TestItSut(object):
                     if cmdline.find(" " + self.node_workspace) >= 0 and cmdline.find("/opt/ros/") == -1 and not cmdline.startswith("/bin/bash"):
                         if cmdline.find("testit_sut") == -1:
                             # Don't send SIGUSR1 to self
-                            rospy.loginfo("Sending SIGUSR1 to " + str(p.pid) + "(" + str(cmdline) + ")")
+                            #rospy.loginfo("Sending SIGUSR1 to " + str(p.pid) + "(" + str(cmdline) + ")")
                             os.kill(p.pid, signal.SIGUSR1)
                 except psutil.AccessDenied:
                     # Some processes might be inaccessible
                     pass
-            rospy.sleep(0.1) # Wait for dump
+            rospy.sleep(0.5) # Wait for dump to complete
             # Process all *.gcda and .coverage files
             self.coverage = {}
             for coverage_directory in self.coverage_directories:
