@@ -104,11 +104,16 @@ class TestItSut(object):
         rospy.loginfo("process_coverage(" + str(filename) + ")")
         header = "!coverage.py: This is a private format, don't read it directly!"
         data = []
-        with open(filename) as f:
-            data = f.readlines()
-	    replaced = data[0].replace(header, '')
-            lines = eval(replaced)
-            return lines['lines']
+        try:
+            while True:
+                with open(filename) as f:
+                    data = f.readlines()
+                    replaced = data[0].replace(header, '')
+                    lines = eval(replaced)
+                    return lines['lines']
+        except:
+            rospy.sleep(0.05)
+            continue
         return {}
 
     def flush(self):
@@ -130,7 +135,6 @@ class TestItSut(object):
                 except psutil.AccessDenied:
                     # Some processes might be inaccessible
                     pass
-            rospy.sleep(0.5) # Wait for dump to complete
             # Process all *.gcda and .coverage files
             self.coverage = {}
             for coverage_directory in self.coverage_directories:
