@@ -138,11 +138,13 @@ class TestItSut(object):
                 with open(filename) as f:
                     data = f.readlines()
                     replaced = data[0].replace(header, '')
+                    terminators = [m.start() for m in re.finditer('}}', replaced)]
+                    if len(terminators) > 1:
+                        replaced = replaced[:terminators[0]+2]
                     lines = eval(replaced)
                     return lines['lines']
         except Exception as e:
             rospy.logerr(e)
-            rospy.sleep(0.05)
         return {}
 
     def flush(self):
