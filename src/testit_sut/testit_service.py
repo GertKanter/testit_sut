@@ -41,20 +41,39 @@ import psutil
 import signal
 import testit_msgs.srv
 import testit_msgs.msg
+import std_msgs.msg
 
 class TestItSut(object):
     def __init__(self):
-        self.mode = rospy.get_param("~mode", "service")
-        if self.mode == "service":
+        self.mode = rospy.get_param("~mode", "srv")
+        if self.mode == "srv":
             # Service mode
             rospy.loginfo("TestIt SUT in SERVICE mode")
-            self.flush_service = rospy.Service("/testit/flush_coverage", testit_msgs.srv.Coverage, self.handle_flush)
+            self.flush_service = rospy.Service("/testit/flush_coverage", testit_msgs.srv.Coverage, self.handle_flush_service)
         else:
             # Topic mode
-            #TODO add support for topic trigger, needed for multi-computer node configuration
             rospy.loginfo("TestIt SUT in TOPIC mode")
+            self.flush_subscriber = rospy.Subscriber("/testit/flush_coverage", std_msgs.msg.UInt32, self.handle_flush_topic)
+            self.flush_publisher = rospy.Publisher("/testit/flush_data", testit_msgs.msg.FlushData, queue_size=10)
         self.node_workspace = rospy.get_param("~node_workspace", "")
         self.coverage_directories = rospy.get_param("~coverage_directories", "")
+        self.host = rospy.get_param("~host", "")
+
+
+    @property
+    def host(self):
+        if self._host is None or len(self._host) == 0:
+            rospy.logwarn("SUT host identifier is not defined!")
+            return ""
+        else:
+            return self._host
+
+    @host.setter
+    def host(self, value):
+        if value is not None and type(value) == str:
+            self._node_workspace = value
+        else:
+            raise ValueError("host value must be string!")
         
     @property
     def node_workspace(self):
@@ -86,9 +105,7 @@ class TestItSut(object):
         else:
             raise ValueError("coverage_directories value must be string!")
 
-    def handle_flush(self, req):
-        rospy.logdebug("Coverage results requested")
-        result = True
+    def get_coverage(self):
         file_coverages = []
         success = self.flush()
 	if self.coverage is not None:
@@ -97,8 +114,20 @@ class TestItSut(object):
                 coverage.filename = file_coverage
                 coverage.lines = self.coverage[file_coverage]
                 file_coverages.append(coverage)
+        return file_coverages
 
-        return testit_msgs.srv.CoverageResponse(result, file_coverages)
+    def handle_flush_topic(self, data):
+        # Received request to send coverage data - send it via topic
+        message = testit_msgs.msg.FlushData()
+        message.host_id = self.host
+        message.seq = data.data
+        message.coverage = self.get_coverage()
+        self.flush_publisher.publish(message)
+
+    def handle_flush_service(self, req):
+        rospy.logdebug("Coverage results requested")
+        result = True
+        return testit_msgs.srv.CoverageResponse(result, self.get_coverage())
 
     def process_coverage(self, filename):
         rospy.loginfo("process_coverage(" + str(filename) + ")")
