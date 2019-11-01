@@ -71,7 +71,7 @@ class TestItSut(object):
     @host.setter
     def host(self, value):
         if value is not None and type(value) == str:
-            self._node_workspace = value
+            self._host = value
         else:
             raise ValueError("host value must be string!")
         
